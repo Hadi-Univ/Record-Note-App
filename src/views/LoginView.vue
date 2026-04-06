@@ -47,7 +47,7 @@
       </div>
 
       <!-- Demo mode notice -->
-      <div class="demo-notice">
+      <div v-if="!GOOGLE_CLIENT_ID" class="demo-notice">
         <p>
           <strong>Demo mode:</strong> No real Google account is needed.
           Click the button above to sign in with a demo account.
@@ -61,20 +61,31 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useNotesStore } from '@/stores/notes'
 
 const router = useRouter()
 const auth = useAuthStore()
+const notesStore = useNotesStore()
 const isLoading = ref(false)
 const errorMessage = ref('')
 
 // Google OAuth Client ID - replace with your real client ID from Google Cloud Console
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
+let gsiLoadHandler = null
+
 onMounted(() => {
   initGoogleSignIn()
+})
+
+onUnmounted(() => {
+  if (gsiLoadHandler) {
+    window.removeEventListener('load', gsiLoadHandler)
+    gsiLoadHandler = null
+  }
 })
 
 function initGoogleSignIn() {
@@ -89,8 +100,7 @@ function initGoogleSignIn() {
       auto_select: false
     })
   } else {
-    // Wait for GSI library to load
-    window.addEventListener('load', () => {
+    gsiLoadHandler = () => {
       if (window.google && window.google.accounts) {
         window.google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
@@ -98,7 +108,8 @@ function initGoogleSignIn() {
           auto_select: false
         })
       }
-    })
+    }
+    window.addEventListener('load', gsiLoadHandler)
   }
 }
 
@@ -109,6 +120,7 @@ function handleCredentialResponse(response) {
     // Decode the JWT credential to get user info
     const payload = parseJwt(response.credential)
     auth.loginWithGoogle({ ...payload, credential: response.credential })
+    notesStore.loadNotes()
     router.push({ name: 'home' })
   } catch (err) {
     errorMessage.value = 'Sign in failed. Please try again.'
@@ -157,6 +169,7 @@ function signInWithDemo() {
       credential: 'demo-token'
     }
     auth.loginWithGoogle(demoUser)
+    notesStore.loadNotes()
     isLoading.value = false
     router.push({ name: 'home' })
   }, 800)
