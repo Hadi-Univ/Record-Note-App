@@ -228,7 +228,9 @@
               </div>
             </div>
           </div>
-          <div v-else-if="pState.results.visualization.html" class="viz-html" v-html="sanitizeHtml(pState.results.visualization.html)"></div>
+          <div v-else-if="pState.results.visualization.html" class="viz-html">
+            <pre class="result-text">{{ pState.results.visualization.html }}</pre>
+          </div>
           <pre v-else class="result-text">{{ JSON.stringify(pState.results.visualization, null, 2) }}</pre>
         </div>
       </div>
@@ -542,10 +544,12 @@ async function runStep1Transcribe() {
 
   const formData = new FormData()
   formData.append('file', audioFile.value)
-  formData.append('google_token', auth.token || '')
 
   const res = await fetch(`${baseUrl.value}/api/v1/transcribe`, {
     method: 'POST',
+    headers: {
+      Authorization: `Bearer ${auth.token || ''}`
+    },
     body: formData
   })
   const data = await res.json().catch(() => ({}))
@@ -621,8 +625,7 @@ async function fetchHistory() {
   try {
     const res = await fetch(`${baseUrl.value}/api/v1/history`, {
       headers: {
-        Authorization: `Bearer ${auth.token || ''}`,
-        'X-Google-Token': auth.token || ''
+        Authorization: `Bearer ${auth.token || ''}`
       }
     })
     const data = await res.json().catch(() => [])
@@ -647,15 +650,17 @@ function toggleJob(job) {
 }
 
 function loadJobIntoState(job) {
+  const transcriptionText = job.transcription || job.transcript
+  const summaryText = job.summary?.summary || job.summary?.text || (typeof job.summary === 'string' ? job.summary : null)
   Object.assign(pState, {
     currentStep: 4,
     status: 'done',
     folderName: job.folder_name || job.id || '',
     fileName: job.file_name || '',
     results: {
-      transcription: job.transcription ? { text: job.transcription } : pState.results.transcription,
-      summary: job.summary ? { summary: job.summary } : pState.results.summary,
-      visualization: job.visualization || pState.results.visualization
+      transcription: transcriptionText ? { text: transcriptionText } : null,
+      summary: summaryText ? { summary: summaryText } : null,
+      visualization: job.visualization || null
     },
     lastError: ''
   })
@@ -698,13 +703,6 @@ function formatDate(isoString) {
     day: 'numeric',
     year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
   })
-}
-
-function sanitizeHtml(html) {
-  // Strip script tags and inline event handlers before rendering
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/\bon\w+\s*=\s*["'][^"']*["']/gi, '')
 }
 </script>
 
