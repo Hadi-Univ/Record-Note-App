@@ -2,11 +2,6 @@
   <div class="pipeline-view">
     <!-- Header -->
     <header class="pipeline-header">
-      <button class="back-btn" @click="router.push({ name: 'home' })" title="Back to notes">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
       <div class="header-title-group">
         <h1 class="header-title">Audio Intelligence</h1>
         <p class="header-subtitle">{{ auth.user?.name }}</p>
@@ -63,7 +58,6 @@ function handleLogout() {
   box-shadow: var(--shadow-sm);
 }
 
-.back-btn,
 .logout-btn {
   background: none;
   border: none;
@@ -78,15 +72,9 @@ function handleLogout() {
   flex-shrink: 0;
 }
 
-.back-btn svg,
 .logout-btn svg {
   width: 20px;
   height: 20px;
-}
-
-.back-btn:hover {
-  color: var(--color-primary);
-  background: var(--color-primary-light);
 }
 
 .logout-btn:hover {
