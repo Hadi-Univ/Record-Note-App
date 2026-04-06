@@ -30,7 +30,22 @@ export const useNotesStore = defineStore('notes', () => {
   function addNote(text) {
     const note = {
       id: crypto.randomUUID(),
+      type: 'text',
       text: text.trim(),
+      createdAt: new Date().toISOString()
+    }
+    notes.value.unshift(note)
+    saveNotes()
+    return note
+  }
+
+  function addAudioNote({ audioSrc, fileName, fileSize }) {
+    const note = {
+      id: crypto.randomUUID(),
+      type: 'audio',
+      audioSrc,
+      fileName,
+      fileSize,
       createdAt: new Date().toISOString()
     }
     notes.value.unshift(note)
@@ -51,5 +66,5 @@ export const useNotesStore = defineStore('notes', () => {
     saveNotes()
   }
 
-  return { notes, loadNotes, reset, addNote, deleteNote, clearAll }
+  return { notes, loadNotes, reset, addNote, addAudioNote, deleteNote, clearAll }
 })
