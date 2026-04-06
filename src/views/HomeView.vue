@@ -35,7 +35,7 @@
           @keydown.ctrl.enter="addNote"
         ></textarea>
         <div class="input-footer">
-          <span class="char-count">{{ newNoteText.length }}/500</span>
+          <span :class="charCountClass">{{ newNoteText.length }}/500</span>
           <button
             class="add-btn"
             @click="addNote"
@@ -60,9 +60,10 @@
             <polyline points="12 6 12 12 16 14" />
           </svg>
           History
+          <span v-if="notesStore.notes.length > 0" class="note-count">{{ notesStore.notes.length }}</span>
         </h2>
         <button
-          v-if="notes.notes.length > 0"
+          v-if="notesStore.notes.length > 0"
           class="clear-btn"
           @click="confirmClear"
         >
@@ -71,7 +72,7 @@
       </div>
 
       <!-- Empty state -->
-      <div v-if="notes.notes.length === 0" class="empty-state">
+      <div v-if="notesStore.notes.length === 0" class="empty-state">
         <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="12" y="8" width="56" height="64" rx="6" fill="#E8F0FE" />
           <rect x="20" y="20" width="28" height="4" rx="2" fill="#DADCE0" />
@@ -86,7 +87,7 @@
       <!-- Notes List -->
       <TransitionGroup v-else name="note-list" tag="div" class="notes-list">
         <div
-          v-for="note in notes.notes"
+          v-for="note in notesStore.notes"
           :key="note.id"
           class="note-card"
         >
@@ -132,10 +133,17 @@ import { useNotesStore } from '@/stores/notes'
 
 const router = useRouter()
 const auth = useAuthStore()
-const notes = useNotesStore()
+const notesStore = useNotesStore()
 
 const newNoteText = ref('')
 const showClearDialog = ref(false)
+
+const charCountClass = computed(() => {
+  const len = newNoteText.value.length
+  if (len >= 480) return 'char-count char-count--danger'
+  if (len >= 400) return 'char-count char-count--warning'
+  return 'char-count'
+})
 
 const defaultAvatar = computed(() => {
   // Generate an inline SVG avatar with initials as a data URI
@@ -163,12 +171,12 @@ function onAvatarError(e) {
 
 function addNote() {
   if (!newNoteText.value.trim()) return
-  notes.addNote(newNoteText.value)
+  notesStore.addNote(newNoteText.value)
   newNoteText.value = ''
 }
 
 function deleteNote(id) {
-  notes.deleteNote(id)
+  notesStore.deleteNote(id)
 }
 
 function confirmClear() {
@@ -176,11 +184,12 @@ function confirmClear() {
 }
 
 function clearAll() {
-  notes.clearAll()
+  notesStore.clearAll()
   showClearDialog.value = false
 }
 
 function handleLogout() {
+  notesStore.reset()
   auth.logout()
   router.push({ name: 'login' })
 }
@@ -335,6 +344,16 @@ function formatDate(isoString) {
 .char-count {
   font-size: 12px;
   color: var(--color-text-muted);
+  transition: color 0.2s;
+}
+
+.char-count--warning {
+  color: var(--color-warning);
+}
+
+.char-count--danger {
+  color: var(--color-danger);
+  font-weight: 600;
 }
 
 .add-btn {
@@ -398,6 +417,20 @@ function formatDate(isoString) {
   width: 20px;
   height: 20px;
   color: var(--color-primary);
+}
+
+.note-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .clear-btn {

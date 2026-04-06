@@ -1,16 +1,35 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useAuthStore } from './auth'
 
 export const useNotesStore = defineStore('notes', () => {
-  const notes = ref(JSON.parse(localStorage.getItem('rna_notes') || '[]'))
+  const notes = ref([])
+
+  function storageKey() {
+    const auth = useAuthStore()
+    const userId = auth.user?.id || 'guest'
+    return `rna_notes_${userId}`
+  }
+
+  function loadNotes() {
+    notes.value = JSON.parse(localStorage.getItem(storageKey()) || '[]')
+  }
 
   function saveNotes() {
-    localStorage.setItem('rna_notes', JSON.stringify(notes.value))
+    localStorage.setItem(storageKey(), JSON.stringify(notes.value))
   }
+
+  // Reset in-memory notes without writing to storage (used on logout)
+  function reset() {
+    notes.value = []
+  }
+
+  // Load notes on store init (handles page reload when user is already logged in)
+  loadNotes()
 
   function addNote(text) {
     const note = {
-      id: Date.now(),
+      id: crypto.randomUUID(),
       text: text.trim(),
       createdAt: new Date().toISOString()
     }
@@ -32,5 +51,5 @@ export const useNotesStore = defineStore('notes', () => {
     saveNotes()
   }
 
-  return { notes, addNote, deleteNote, clearAll }
+  return { notes, loadNotes, reset, addNote, deleteNote, clearAll }
 })

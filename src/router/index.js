@@ -17,6 +17,10 @@ const routes = [
     name: 'home',
     component: () => import('@/views/HomeView.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/'
   }
 ]
 
