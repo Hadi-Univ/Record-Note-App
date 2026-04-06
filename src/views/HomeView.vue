@@ -14,13 +14,21 @@
           <p class="user-name">{{ auth.user?.name }}</p>
         </div>
       </div>
-      <button class="logout-btn" @click="handleLogout" title="Sign out">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-          <polyline points="16 17 21 12 16 7" />
-          <line x1="21" y1="12" x2="9" y2="12" />
-        </svg>
-      </button>
+      <div class="header-right">
+        <button class="pipeline-btn" @click="router.push({ name: 'pipeline' })" title="Audio Pipeline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18V5l12-2v13" />
+            <circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+          </svg>
+        </button>
+        <button class="logout-btn" @click="handleLogout" title="Sign out">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </button>
+      </div>
     </header>
 
     <!-- New Note Input -->
@@ -473,6 +481,35 @@ function formatDate(isoString) {
 .logout-btn:hover {
   color: var(--color-danger);
   background: #FEE8E6;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pipeline-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
+}
+
+.pipeline-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.pipeline-btn:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 /* Note Input */
